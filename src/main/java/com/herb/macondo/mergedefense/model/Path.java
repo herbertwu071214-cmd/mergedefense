@@ -25,4 +25,31 @@ public class Path {
     public List<Waypoint> getWaypoints() { return waypoints; }
     public Waypoint getStart() { return waypoints.get(0); }
     public Waypoint getEnd() { return waypoints.get(waypoints.size() - 1); }
+
+    public boolean isCellOnPath(int row, int col, GameModel model) {
+        double cellSize = model.getCellSize();
+        double offsetX = model.getBoardOffsetX();
+        double offsetY = model.getBoardOffsetY();
+        double cellCenterX = offsetX + col * cellSize + cellSize/2;
+        double cellCenterY = offsetY + row * cellSize + cellSize/2;
+        for (int i = 0; i < waypoints.size() - 1; i++) {
+            Waypoint a = waypoints.get(i);
+            Waypoint b = waypoints.get(i + 1);
+            double ax = cellCenterX - a.getX();
+            double ay = cellCenterY - a.getY();
+            double bx = b.getX() - a.getX();
+            double by = b.getY() - a.getY();
+            double dot = ax * bx + ay * by;
+            double len2 = bx * bx + by * by;
+            if (len2 == 0) continue;
+            double t = dot / len2;
+            t = Math.max(0, Math.min(1, t));
+            double projX = a.getX() + t * bx;
+            double projY = a.getY() + t * by;
+            double dist = Math.hypot(cellCenterX - projX, cellCenterY - projY);
+            if (dist < cellSize / 2) return true;
+        }
+        return false;
+    }
 }
+
