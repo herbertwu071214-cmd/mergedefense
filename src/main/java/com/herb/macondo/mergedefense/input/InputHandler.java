@@ -41,4 +41,3 @@ public class InputHandler {
     public int getDragStartCol() { return dragStartCol; }
     public void clearDragStart() { dragStartRow = -1; dragStartCol = -1; dragging = false; }
 }
-

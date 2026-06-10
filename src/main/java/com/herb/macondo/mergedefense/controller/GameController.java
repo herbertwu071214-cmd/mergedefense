@@ -45,11 +45,16 @@ public class GameController {
             }
         };
         gameLoop.start();
+        model.startGame();
     }
 
     private void update(double deltaTime) {
         handleTowerPlacement();
         handleMergeDrag();
+        model.updateEnemies(deltaTime);
+        model.updateTowerAttacks(deltaTime);
+        model.processProjectileHits();
+        model.getWaveManager().update(deltaTime, model);
     }
 
     private void handleTowerPlacement() {
@@ -61,7 +66,6 @@ public class GameController {
             if (model.canPlaceTower(row, col)) {
                 model.placeTower(row, col, TowerType.LEVEL1);
             }
-            // prevent multiple placements on same click
             input.mouseReleased(null);
         }
     }

@@ -3,6 +3,9 @@ package com.herb.macondo.mergedefense.view;
 import com.herb.macondo.mergedefense.model.GameModel;
 import com.herb.macondo.mergedefense.model.Path;
 import com.herb.macondo.mergedefense.model.Tower;
+import com.herb.macondo.mergedefense.model.Enemy;
+import com.herb.macondo.mergedefense.model.Projectile;
+import com.herb.macondo.mergedefense.model.WaveManager;
 import com.herb.macondo.mergedefense.model.Waypoint;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -37,7 +40,6 @@ public class GameView {
         double offsetY = model.getBoardOffsetY();
         double cellSize = model.getCellSize();
 
-        // Draw grid
         gc.setStroke(Color.GRAY);
         gc.setLineWidth(1);
         for (int row = 0; row < model.getGridHeight(); row++) {
@@ -48,7 +50,6 @@ public class GameView {
             }
         }
 
-        // Draw path
         Path path = model.getPath();
         List<Waypoint> waypoints = path.getWaypoints();
         gc.setStroke(Color.GRAY);
@@ -66,7 +67,6 @@ public class GameView {
             gc.strokeLine(wp1.getX(), wp1.getY(), wp2.getX(), wp2.getY());
         }
 
-        // Draw towers
         for (int row = 0; row < model.getGridHeight(); row++) {
             for (int col = 0; col < model.getGridWidth(); col++) {
                 Tower t = model.getTower(row, col);
@@ -82,7 +82,6 @@ public class GameView {
             }
         }
 
-        // Highlight dragged tower
         if (highlightRow != -1 && highlightCol != -1) {
             Tower t = model.getTower(highlightRow, highlightCol);
             if (t != null) {
@@ -95,7 +94,6 @@ public class GameView {
             }
         }
 
-        // Flash effect on merge
         if (flashTimer > 0) {
             flashTimer -= 1.0/60.0;
             gc.setFill(Color.rgb(255, 255, 255, 0.5));
@@ -108,6 +106,33 @@ public class GameView {
                     }
                 }
             }
+        }
+
+        for (Enemy e : model.getEnemies()) {
+            double x = e.getX();
+            double y = e.getY();
+            double radius = 15;
+            gc.setFill(e.getType().getColor());
+            gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+            double healthPercent = e.getHealth() / e.getMaxHealth();
+            gc.setFill(Color.RED);
+            gc.fillRect(x - radius, y - radius - 8, radius * 2, 4);
+            gc.setFill(Color.GREEN);
+            gc.fillRect(x - radius, y - radius - 8, radius * 2 * healthPercent, 4);
+        }
+
+        gc.setFill(Color.ORANGE);
+        for (Projectile p : model.getProjectiles()) {
+            gc.fillOval(p.getX() - 4, p.getY() - 4, 8, 8);
+        }
+
+        gc.setFill(Color.WHITE);
+        gc.fillText("Lives: " + model.getLives(), canvas.getWidth() - 80, 30);
+        gc.fillText("Coins: " + model.getCoins(), canvas.getWidth() - 80, 60);
+        WaveManager wm = model.getWaveManager();
+        gc.fillText("Wave: " + wm.getCurrentWave(), canvas.getWidth() - 80, 90);
+        if (!wm.isWaveInProgress()) {
+            gc.fillText("Next wave starting soon...", canvas.getWidth() - 200, 120);
         }
     }
 }

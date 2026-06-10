@@ -1,5 +1,7 @@
 package com.herb.macondo.mergedefense.model;
 
+import java.util.List;
+
 public class Tower {
     private int row;
     private int col;
@@ -26,5 +28,22 @@ public class Tower {
         if (nextLevel <= 5) {
             type = TowerType.fromLevel(nextLevel);
         }
+    }
+
+    public Enemy findNearestEnemy(List<Enemy> enemies) {
+        double towerCenterX = col * 60 + 100 + 30;
+        double towerCenterY = row * 60 + 100 + 30;
+        Enemy nearest = null;
+        double minDist = type.getRange();
+        for (Enemy e : enemies) {
+            double dx = e.getX() - towerCenterX;
+            double dy = e.getY() - towerCenterY;
+            double dist = Math.hypot(dx, dy);
+            if (dist < minDist) {
+                minDist = dist;
+                nearest = e;
+            }
+        }
+        return nearest;
     }
 }

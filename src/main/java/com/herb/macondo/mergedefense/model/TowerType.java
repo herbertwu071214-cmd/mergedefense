@@ -36,4 +36,3 @@ public enum TowerType {
         return LEVEL1;
     }
 }
-

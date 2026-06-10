@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.herb.macondo.mergedefense</groupId>
+    <groupId>com.herb.mergedefense</groupId>
     <artifactId>mergedefense</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>MergeDefense</name>
@@ -53,7 +53,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.herb.macondo.mergedefense.Launcher</mainClass>
+                            <mainClass>com.herb.mergedefense.Launcher</mainClass>
                             <launcher>app</launcher>
                         </configuration>
                     </execution>
