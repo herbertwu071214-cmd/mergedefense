@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense.model;
+package com.herb.mergedefense.model;
 
 import java.util.Random;
 
@@ -11,6 +11,8 @@ public class WaveManager {
     private boolean waveInProgress;
     private boolean bossWave;
     private Random random;
+    private double waveBreakTimer;
+    private final double waveBreakDuration = 5.0;
 
     public WaveManager() {
         this.currentWave = 1;
@@ -18,6 +20,7 @@ public class WaveManager {
         this.random = new Random();
         this.waveInProgress = false;
         this.bossWave = false;
+        this.waveBreakTimer = 0;
     }
 
     public void startWave() {
@@ -30,12 +33,20 @@ public class WaveManager {
 
     private int calculateEnemiesCount() {
         int base = 5;
-        int extra = (currentWave - 1) * 1;
-        return Math.min(base + extra, 30);
+        int extra = (currentWave - 1) * 2;
+        return Math.min(base + extra, 50);
     }
 
     public void update(double deltaTime, GameModel model) {
-        if (!waveInProgress) return;
+        if (!waveInProgress) {
+            waveBreakTimer += deltaTime;
+            if (waveBreakTimer >= waveBreakDuration) {
+                waveBreakTimer = 0;
+                startWave();
+            }
+            return;
+        }
+
         if (enemiesToSpawn > 0) {
             spawnTimer += deltaTime;
             if (spawnTimer >= spawnDelay) {
@@ -44,9 +55,11 @@ public class WaveManager {
                 enemiesToSpawn--;
             }
         }
+        
         if (enemiesToSpawn == 0 && model.getEnemies().isEmpty()) {
             waveInProgress = false;
             currentWave++;
+            waveBreakTimer = 0;
         }
     }
 
@@ -61,8 +74,8 @@ public class WaveManager {
         }
         double r = random.nextDouble();
         if (currentWave >= 10) {
-            if (r < 0.5) return EnemyType.NORMAL;
-            else if (r < 0.75) return EnemyType.FAST;
+            if (r < 0.4) return EnemyType.NORMAL;
+            else if (r < 0.7) return EnemyType.FAST;
             else return EnemyType.ARMORED;
         } else if (currentWave >= 5) {
             if (r < 0.6) return EnemyType.NORMAL;

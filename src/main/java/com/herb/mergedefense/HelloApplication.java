@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense;
+package com.herb.mergedefense;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

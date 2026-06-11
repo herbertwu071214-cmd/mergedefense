@@ -1,12 +1,14 @@
-package com.herb.macondo.mergedefense.controller;
+package com.herb.mergedefense.controller;
 
-import com.herb.macondo.mergedefense.input.InputHandler;
-import com.herb.macondo.mergedefense.model.GameModel;
-import com.herb.macondo.mergedefense.model.Tower;
-import com.herb.macondo.mergedefense.model.TowerType;
-import com.herb.macondo.mergedefense.view.GameView;
+import com.herb.mergedefense.input.InputHandler;
+import com.herb.mergedefense.model.GameModel;
+import com.herb.mergedefense.model.Tower;
+import com.herb.mergedefense.model.TowerType;
+import com.herb.mergedefense.model.Upgrade;
+import com.herb.mergedefense.view.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseButton;
 
 public class GameController {
@@ -15,18 +17,27 @@ public class GameController {
     private InputHandler input;
     private AnimationTimer gameLoop;
     private boolean dragStartedOnTower = false;
+    private Canvas canvas;
+    private Scene scene;
+    private boolean placementHandled = false;
 
-    public GameController(GameModel model, GameView view, Scene scene) {
+    public GameController(GameModel model, GameView view, Scene scene, Canvas canvas) {
         this.model = model;
         this.view = view;
+        this.scene = scene;
+        this.canvas = canvas;
         this.input = new InputHandler();
         attachInputHandlers(scene);
     }
 
     private void attachInputHandlers(Scene scene) {
-        scene.setOnMousePressed(e -> input.mousePressed(e));
+        scene.setOnMousePressed(e -> {
+            input.mousePressed(e);
+            placementHandled = false;
+        });
         scene.setOnMouseReleased(e -> input.mouseReleased(e));
         scene.setOnMouseMoved(e -> input.mouseMoved(e));
+        scene.setOnMouseDragged(e -> input.mouseMoved(e));
     }
 
     public void start() {
@@ -58,20 +69,32 @@ public class GameController {
     }
 
     private void handleTowerPlacement() {
-        if (input.isMousePressed() && input.getPressedButton() == MouseButton.PRIMARY && !dragStartedOnTower) {
+        if (input.isMousePressed() && input.getPressedButton() == MouseButton.PRIMARY && !dragStartedOnTower && !placementHandled) {
             double mouseX = input.getLastMouseX();
             double mouseY = input.getLastMouseY();
+            
+            if (handleUpgradeShopClick(mouseX, mouseY)) {
+                placementHandled = true;
+                return;
+            }
+            
             int col = (int)((mouseX - model.getBoardOffsetX()) / model.getCellSize());
             int row = (int)((mouseY - model.getBoardOffsetY()) / model.getCellSize());
-            if (model.canPlaceTower(row, col)) {
-                model.placeTower(row, col, TowerType.LEVEL1);
+            
+            if (row >= 0 && row < model.getGridHeight() && col >= 0 && col < model.getGridWidth()) {
+                Tower t = model.getTower(row, col);
+                if (t == null) {
+                    if (model.canPlaceTower(row, col) && model.buyTower()) {
+                        model.placeTower(row, col, TowerType.LEVEL1);
+                    }
+                    placementHandled = true;
+                }
             }
-            input.mouseReleased(null);
         }
     }
 
     private void handleMergeDrag() {
-        if (input.isMousePressed() && !dragStartedOnTower) {
+        if (input.isMousePressed() && !dragStartedOnTower && !placementHandled) {
             double mouseX = input.getLastMouseX();
             double mouseY = input.getLastMouseY();
             int col = (int)((mouseX - model.getBoardOffsetX()) / model.getCellSize());
@@ -102,5 +125,22 @@ public class GameController {
             input.clearDragStart();
             view.setHighlight(-1, -1);
         }
+    }
+
+    private boolean handleUpgradeShopClick(double mouseX, double mouseY) {
+        double startX = canvas.getWidth() - 180;
+        double startY = 150;
+        double buttonWidth = 160;
+        double buttonHeight = 40;
+        double spacing = 10;
+        Upgrade[] upgrades = model.getUpgrades();
+        for (int i = 0; i < upgrades.length; i++) {
+            double y = startY + i * (buttonHeight + spacing);
+            if (mouseX >= startX && mouseX <= startX + buttonWidth && mouseY >= y && mouseY <= y + buttonHeight) {
+                model.purchaseUpgrade(upgrades[i]);
+                return true;
+            }
+        }
+        return false;
     }
 }

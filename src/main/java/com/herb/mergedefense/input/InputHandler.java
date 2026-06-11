@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense.input;
+package com.herb.mergedefense.input;
 
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;

@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense;
+package com.herb.mergedefense;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

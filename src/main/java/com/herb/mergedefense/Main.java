@@ -1,8 +1,8 @@
-package com.herb.macondo.mergedefense;
+package com.herb.mergedefense;
 
-import com.herb.macondo.mergedefense.controller.GameController;
-import com.herb.macondo.mergedefense.model.GameModel;
-import com.herb.macondo.mergedefense.view.GameView;
+import com.herb.mergedefense.controller.GameController;
+import com.herb.mergedefense.model.GameModel;
+import com.herb.mergedefense.view.GameView;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -19,7 +19,7 @@ public class Main extends Application {
         StackPane root = new StackPane(canvas);
         Scene scene = new Scene(root, 800, 600);
 
-        GameController controller = new GameController(model, view, scene);
+        GameController controller = new GameController(model, view, scene, canvas);
 
         primaryStage.setTitle("Merge Defense");
         primaryStage.setScene(scene);

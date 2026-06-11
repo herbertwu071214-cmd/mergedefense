@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense.model;
+package com.herb.mergedefense.model;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,6 +17,7 @@ public class GameModel {
     private WaveManager waveManager;
     private int coins;
     private int lives;
+    private Upgrade[] upgrades;
 
     public GameModel() {
         this.path = new Path();
@@ -26,6 +27,7 @@ public class GameModel {
         this.waveManager = new WaveManager();
         this.coins = 200;
         this.lives = 20;
+        this.upgrades = Upgrade.values();
     }
 
     public int getGridWidth() { return gridWidth; }
@@ -39,6 +41,7 @@ public class GameModel {
     public WaveManager getWaveManager() { return waveManager; }
     public int getCoins() { return coins; }
     public int getLives() { return lives; }
+    public Upgrade[] getUpgrades() { return upgrades; }
 
     public void reduceLives(int amount) {
         lives -= amount;
@@ -57,6 +60,21 @@ public class GameModel {
         }
         return false;
     }
+
+    public boolean purchaseUpgrade(Upgrade upgrade) {
+        int cost = upgrade.getCost();
+        if (coins >= cost && !upgrade.isMaxLevel()) {
+            coins -= cost;
+            upgrade.upgrade();
+            return true;
+        }
+        return false;
+    }
+
+    public double getDamageMultiplier() { return upgrades[0].getCurrentMultiplier(); }
+    public double getAttackSpeedMultiplier() { return upgrades[1].getCurrentMultiplier(); }
+    public double getRangeMultiplier() { return upgrades[2].getCurrentMultiplier(); }
+    public double getCoinMultiplier() { return upgrades[3].getCurrentMultiplier(); }
 
     public boolean isCellOnPath(int row, int col) {
         return path.isCellOnPath(row, col, this);
@@ -101,11 +119,13 @@ public class GameModel {
 
     public void updateEnemies(double deltaTime) {
         List<Waypoint> waypoints = path.getWaypoints();
-        for (Enemy e : enemies) {
+        Iterator<Enemy> it = enemies.iterator();
+        while (it.hasNext()) {
+            Enemy e = it.next();
             int nextIdx = e.getWaypointIndex();
             if (nextIdx >= waypoints.size()) {
                 reduceLives(1);
-                enemies.remove(e);
+                it.remove();
                 continue;
             }
             Waypoint target = waypoints.get(nextIdx);
@@ -117,18 +137,22 @@ public class GameModel {
     }
 
     public void updateTowerAttacks(double deltaTime) {
+        double rangeMultiplier = getRangeMultiplier();
+        double attackSpeedMultiplier = getAttackSpeedMultiplier();
         for (int row = 0; row < gridHeight; row++) {
             for (int col = 0; col < gridWidth; col++) {
                 Tower t = towers[row][col];
                 if (t != null) {
                     t.reduceAttackTimer(deltaTime);
                     if (t.canAttack()) {
-                        Enemy target = t.findNearestEnemy(enemies);
+                        Enemy target = t.findNearestEnemy(enemies, rangeMultiplier);
                         if (target != null) {
                             double towerX = boardOffsetX + col * cellSize + cellSize/2;
                             double towerY = boardOffsetY + row * cellSize + cellSize/2;
-                            projectiles.add(new Projectile(towerX, towerY, target.getX(), target.getY(), t.getType().getDamage()));
-                            t.resetAttackTimer();
+                            double damage = t.getType().getDamage() * getDamageMultiplier();
+                            projectiles.add(new Projectile(towerX, towerY, target.getX(), target.getY(), damage));
+                            double effectiveCooldown = t.getType().getAttackCooldown() * attackSpeedMultiplier;
+                            t.setAttackTimer(effectiveCooldown);
                         }
                     }
                 }
@@ -154,7 +178,7 @@ public class GameModel {
                 if (Math.hypot(dx, dy) < 15) {
                     e.takeDamage(p.getDamage());
                     if (!e.isAlive()) {
-                        coins += e.getReward();
+                        coins += (int)(e.getReward() * getCoinMultiplier());
                         eIt.remove();
                     }
                     hit = true;
@@ -167,5 +191,20 @@ public class GameModel {
 
     public void startGame() {
         waveManager.startWave();
+    }
+
+    public void resetGame() {
+        for (int i = 0; i < gridHeight; i++) {
+            for (int j = 0; j < gridWidth; j++) {
+                towers[i][j] = null;
+            }
+        }
+        enemies.clear();
+        projectiles.clear();
+        coins = 200;
+        lives = 20;
+        Upgrade.resetAll();
+        waveManager = new WaveManager();
+        startGame();
     }
 }

@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense.model;
+package com.herb.mergedefense.model;
 
 public class Projectile {
     private double x;

@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense.model;
+package com.herb.mergedefense.model;
 
 import javafx.scene.paint.Color;
 

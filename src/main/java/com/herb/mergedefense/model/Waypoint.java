@@ -1,4 +1,4 @@
-package com.herb.macondo.mergedefense.model;
+package com.herb.mergedefense.model;
 
 public class Waypoint {
     private double x;

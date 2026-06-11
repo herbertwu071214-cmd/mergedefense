@@ -1,12 +1,13 @@
-package com.herb.macondo.mergedefense.view;
+package com.herb.mergedefense.view;
 
-import com.herb.macondo.mergedefense.model.GameModel;
-import com.herb.macondo.mergedefense.model.Path;
-import com.herb.macondo.mergedefense.model.Tower;
-import com.herb.macondo.mergedefense.model.Enemy;
-import com.herb.macondo.mergedefense.model.Projectile;
-import com.herb.macondo.mergedefense.model.WaveManager;
-import com.herb.macondo.mergedefense.model.Waypoint;
+import com.herb.mergedefense.model.GameModel;
+import com.herb.mergedefense.model.Path;
+import com.herb.mergedefense.model.Tower;
+import com.herb.mergedefense.model.Enemy;
+import com.herb.mergedefense.model.Projectile;
+import com.herb.mergedefense.model.WaveManager;
+import com.herb.mergedefense.model.Waypoint;
+import com.herb.mergedefense.model.Upgrade;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -133,6 +134,29 @@ public class GameView {
         gc.fillText("Wave: " + wm.getCurrentWave(), canvas.getWidth() - 80, 90);
         if (!wm.isWaveInProgress()) {
             gc.fillText("Next wave starting soon...", canvas.getWidth() - 200, 120);
+        }
+
+        drawUpgradeShop(gc, model);
+    }
+
+    private void drawUpgradeShop(GraphicsContext gc, GameModel model) {
+        double startX = canvas.getWidth() - 180;
+        double startY = 150;
+        double buttonWidth = 160;
+        double buttonHeight = 40;
+        double spacing = 10;
+        Upgrade[] upgrades = model.getUpgrades();
+        for (int i = 0; i < upgrades.length; i++) {
+            Upgrade u = upgrades[i];
+            double y = startY + i * (buttonHeight + spacing);
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(startX, y, buttonWidth, buttonHeight);
+            gc.setFill(Color.WHITE);
+            String text = u.getName() + " Lv." + u.getCurrentLevel() + " (" + u.getCost() + ")";
+            if (u.isMaxLevel()) text = u.getName() + " MAX";
+            gc.fillText(text, startX + 5, y + 25);
+            gc.setStroke(Color.GRAY);
+            gc.strokeRect(startX, y, buttonWidth, buttonHeight);
         }
     }
 }
